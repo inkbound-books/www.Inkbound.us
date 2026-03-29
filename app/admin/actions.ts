@@ -20,8 +20,7 @@ export async function addBook(data: {
   description?: string
   cover_url?: string
   amazon_url?: string
-  apple_url?: string
-  kobo_url?: string
+  preview_download_url?: string
   price?: string
   is_featured?: boolean
 }) {
@@ -34,8 +33,7 @@ export async function addBook(data: {
     description: data.description || null,
     cover_url: data.cover_url || null,
     amazon_url: data.amazon_url || null,
-    apple_url: data.apple_url || null,
-    kobo_url: data.kobo_url || null,
+    preview_download_url: data.preview_download_url || null,
     price: data.price ? parseFloat(data.price) : null,
     is_featured: data.is_featured ?? false,
   })
@@ -58,8 +56,7 @@ export async function updateBook(
     description?: string
     cover_url?: string
     amazon_url?: string
-    apple_url?: string
-    kobo_url?: string
+    preview_download_url?: string
     price?: string
     is_featured?: boolean
   }
@@ -75,8 +72,7 @@ export async function updateBook(
       description: data.description || null,
       cover_url: data.cover_url || null,
       amazon_url: data.amazon_url || null,
-      apple_url: data.apple_url || null,
-      kobo_url: data.kobo_url || null,
+      preview_download_url: data.preview_download_url || null,
       price: data.price ? parseFloat(data.price) : null,
       is_featured: data.is_featured ?? false,
       updated_at: new Date().toISOString(),
@@ -200,6 +196,36 @@ export async function deletePage(id: string) {
   }
 
   revalidatePath("/admin/pages")
+  return { success: true }
+}
+
+export async function savePageContent(
+  slug: string,
+  content: Record<string, unknown>
+): Promise<{ success: boolean; error?: string }> {
+  await requireAdmin()
+  const supabase = createAdminClient()
+
+  const { error } = await supabase
+    .from("pages")
+    .update({
+      content,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("slug", slug)
+
+  if (error) {
+    return { success: false, error: error.message }
+  }
+
+  // Revalidate all pages that might use this content
+  revalidatePath("/admin/pages")
+  revalidatePath("/")
+  revalidatePath("/about")
+  revalidatePath("/catalog")
+  revalidatePath("/formats")
+  revalidatePath(`/admin/pages/${slug}/edit`)
+  
   return { success: true }
 }
 

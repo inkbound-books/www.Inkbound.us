@@ -24,16 +24,21 @@ export default function AdminLoginPage() {
     setError(null)
     setLoading(true)
 
-    const result = await loginAdmin(password)
+    try {
+      const result = await loginAdmin(password)
 
-    if (result.error) {
-      setError(result.error)
+      if (result?.error) {
+        setError(result.error)
+        setLoading(false)
+      } else if (result?.success) {
+        // Cookie is set, redirect to admin dashboard
+        router.push("/admin")
+        router.refresh()
+      }
+    } catch {
+      setError("An unexpected error occurred. Please try again.")
       setLoading(false)
-      return
     }
-
-    router.push("/admin")
-    router.refresh()
   }
 
   return (

@@ -29,8 +29,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, Loader2, ExternalLink } from "lucide-react"
+import { Plus, Pencil, Trash2, Loader2, ExternalLink, Eye } from "lucide-react"
 import Link from "next/link"
+
+// Pages that support visual editing
+const VISUAL_EDIT_PAGES = ["home", "about", "catalog", "formats"]
 
 interface Page {
   id: string
@@ -242,6 +245,14 @@ export function PagesManager({ pages }: PagesManagerProps) {
                       View
                     </Button>
                   </Link>
+                  {VISUAL_EDIT_PAGES.includes(page.slug) && (
+                    <Link href={`/admin/pages/${page.slug}/edit`}>
+                      <Button variant="secondary" size="sm">
+                        <Eye className="mr-2 h-4 w-4" />
+                        Visual Edit
+                      </Button>
+                    </Link>
+                  )}
                   <Dialog
                     open={editOpen === page.id}
                     onOpenChange={(open) => {
