@@ -20,7 +20,6 @@ export const metadata: Metadata = {
     template: '%s - Inkbound Books',
   },
   description: 'A small team dedicated to writing and editing quality e-books',
-  // VULN-04: removed generator: 'v0.app' — no need to advertise the builder
 }
 
 export const viewport: Viewport = {
