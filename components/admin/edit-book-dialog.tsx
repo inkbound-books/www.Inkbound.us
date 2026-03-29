@@ -27,8 +27,7 @@ interface Book {
   description: string | null
   cover_url: string | null
   amazon_url: string | null
-  apple_url: string | null
-  kobo_url: string | null
+  preview_download_url: string | null
   price: number | null
   is_featured: boolean
 }
@@ -44,8 +43,7 @@ export function EditBookDialog({ book }: { book: Book }) {
     description: book.description || "",
     cover_url: book.cover_url || "",
     amazon_url: book.amazon_url || "",
-    apple_url: book.apple_url || "",
-    kobo_url: book.kobo_url || "",
+    preview_download_url: book.preview_download_url || "",
     price: book.price?.toString() || "",
     is_featured: book.is_featured,
   })
@@ -61,8 +59,7 @@ export function EditBookDialog({ book }: { book: Book }) {
       description: formData.description || undefined,
       cover_url: formData.cover_url || undefined,
       amazon_url: formData.amazon_url || undefined,
-      apple_url: formData.apple_url || undefined,
-      kobo_url: formData.kobo_url || undefined,
+      preview_download_url: formData.preview_download_url || undefined,
       price: formData.price || undefined,
       is_featured: formData.is_featured,
     })
@@ -150,37 +147,29 @@ export function EditBookDialog({ book }: { book: Book }) {
             />
           </div>
 
-          <div className="space-y-4">
-            <Label className="text-sm font-medium">Purchase Links</Label>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="space-y-2">
-                <Label htmlFor="edit-amazon_url" className="text-xs text-muted-foreground">Amazon</Label>
-                <Input
-                  id="edit-amazon_url"
-                  type="url"
-                  value={formData.amazon_url}
-                  onChange={(e) => setFormData({ ...formData, amazon_url: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-apple_url" className="text-xs text-muted-foreground">Apple Books</Label>
-                <Input
-                  id="edit-apple_url"
-                  type="url"
-                  value={formData.apple_url}
-                  onChange={(e) => setFormData({ ...formData, apple_url: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-kobo_url" className="text-xs text-muted-foreground">Kobo</Label>
-                <Input
-                  id="edit-kobo_url"
-                  type="url"
-                  value={formData.kobo_url}
-                  onChange={(e) => setFormData({ ...formData, kobo_url: e.target.value })}
-                />
-              </div>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="edit-amazon_url">Amazon URL</Label>
+            <Input
+              id="edit-amazon_url"
+              type="url"
+              value={formData.amazon_url}
+              onChange={(e) => setFormData({ ...formData, amazon_url: e.target.value })}
+              placeholder="https://amazon.com/dp/..."
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-preview_download_url">Preview Download URL</Label>
+            <Input
+              id="edit-preview_download_url"
+              type="url"
+              value={formData.preview_download_url}
+              onChange={(e) => setFormData({ ...formData, preview_download_url: e.target.value })}
+              placeholder="https://drive.google.com/... or https://dropbox.com/..."
+            />
+            <p className="text-xs text-muted-foreground">
+              Link to a free preview/sample chapter (Google Drive, Dropbox, etc.)
+            </p>
           </div>
 
           <div className="flex items-center gap-2">

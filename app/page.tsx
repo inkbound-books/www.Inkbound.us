@@ -1,14 +1,17 @@
 import Link from "next/link"
 import { ContentSection } from "@/components/content-section"
+import { getPageContent, defaultHomeContent, type HomePageContent } from "@/lib/page-content"
 
-export default function HomePage() {
+export default async function HomePage() {
+  const content = await getPageContent<HomePageContent>("home", defaultHomeContent)
+
   return (
     <main className="relative z-10 mx-auto min-h-screen max-w-3xl px-4 pt-32 pb-16 md:px-8">
       <h1 className="mb-4 text-4xl font-semibold leading-tight text-foreground md:text-5xl text-balance">
-        Welcome to Inkbound Books
+        {content.hero.title}
       </h1>
       <p className="mb-12 text-lg font-light text-muted-foreground md:text-xl">
-        We are a small team dedicated to writing and editing books.
+        {content.hero.subtitle}
       </p>
 
       <ContentSection>
@@ -25,25 +28,21 @@ export default function HomePage() {
           <p className="mb-3 text-lg font-semibold text-foreground">
             Email:{" "}
             <a
-              href="mailto:inkbound.business@proton.me"
+              href={`mailto:${content.purchasing.email}`}
               className="font-normal text-primary hover:underline"
             >
-              <code className="rounded bg-muted px-2 py-1 text-sm">inkbound.business@proton.me</code>
+              <code className="rounded bg-muted px-2 py-1 text-sm">{content.purchasing.email}</code>
             </a>
           </p>
           <p className="mb-2 font-semibold text-foreground">Email Subject:</p>
-          <p className="mb-4 text-muted-foreground">Purchase Book</p>
+          <p className="mb-4 text-muted-foreground">{content.purchasing.subject}</p>
           <p className="mb-2 font-semibold text-foreground">Email Content:</p>
           <ul className="space-y-2 pl-4 text-muted-foreground">
-            <li className="relative pl-6 before:absolute before:left-0 before:font-bold before:text-primary before:content-['→']">
-              Book Name
-            </li>
-            <li className="relative pl-6 before:absolute before:left-0 before:font-bold before:text-primary before:content-['→']">
-              E-book Format
-            </li>
-            <li className="relative pl-6 before:absolute before:left-0 before:font-bold before:text-primary before:content-['→']">
-              Payment ID (if applicable)
-            </li>
+            {content.purchasing.contentItems.map((item, index) => (
+              <li key={index} className="relative pl-6 before:absolute before:left-0 before:font-bold before:text-primary before:content-['→']">
+                {item}
+              </li>
+            ))}
           </ul>
         </div>
 
@@ -56,9 +55,7 @@ export default function HomePage() {
         </p>
 
         <p className="leading-relaxed text-muted-foreground">
-          If you need a different format, include a request in your email and we will try to fulfill
-          it. If we are unable to do so, you will be provided with an EPUB file, which you may
-          convert on your own.
+          {content.formats.fallbackText}
         </p>
       </ContentSection>
     </main>

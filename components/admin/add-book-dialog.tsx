@@ -26,8 +26,7 @@ const emptyForm = {
   description: "",
   cover_url: "",
   amazon_url: "",
-  apple_url: "",
-  kobo_url: "",
+  preview_download_url: "",
   price: "",
   is_featured: false,
 }
@@ -50,8 +49,7 @@ export function AddBookDialog() {
       description: formData.description || undefined,
       cover_url: formData.cover_url || undefined,
       amazon_url: formData.amazon_url || undefined,
-      apple_url: formData.apple_url || undefined,
-      kobo_url: formData.kobo_url || undefined,
+      preview_download_url: formData.preview_download_url || undefined,
       price: formData.price || undefined,
       is_featured: formData.is_featured,
     })
@@ -143,37 +141,29 @@ export function AddBookDialog() {
             />
           </div>
 
-          <div className="space-y-4">
-            <Label className="text-sm font-medium">Purchase Links</Label>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="space-y-2">
-                <Label htmlFor="amazon_url" className="text-xs text-muted-foreground">Amazon</Label>
-                <Input
-                  id="amazon_url"
-                  type="url"
-                  value={formData.amazon_url}
-                  onChange={(e) => setFormData({ ...formData, amazon_url: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="apple_url" className="text-xs text-muted-foreground">Apple Books</Label>
-                <Input
-                  id="apple_url"
-                  type="url"
-                  value={formData.apple_url}
-                  onChange={(e) => setFormData({ ...formData, apple_url: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="kobo_url" className="text-xs text-muted-foreground">Kobo</Label>
-                <Input
-                  id="kobo_url"
-                  type="url"
-                  value={formData.kobo_url}
-                  onChange={(e) => setFormData({ ...formData, kobo_url: e.target.value })}
-                />
-              </div>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="amazon_url">Amazon URL</Label>
+            <Input
+              id="amazon_url"
+              type="url"
+              value={formData.amazon_url}
+              onChange={(e) => setFormData({ ...formData, amazon_url: e.target.value })}
+              placeholder="https://amazon.com/dp/..."
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="preview_download_url">Preview Download URL</Label>
+            <Input
+              id="preview_download_url"
+              type="url"
+              value={formData.preview_download_url}
+              onChange={(e) => setFormData({ ...formData, preview_download_url: e.target.value })}
+              placeholder="https://drive.google.com/... or https://dropbox.com/..."
+            />
+            <p className="text-xs text-muted-foreground">
+              Link to a free preview/sample chapter (Google Drive, Dropbox, etc.)
+            </p>
           </div>
 
           <div className="flex items-center gap-2">

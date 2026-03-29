@@ -1,39 +1,36 @@
 import type { Metadata } from "next"
 import { ContentSection } from "@/components/content-section"
+import { getPageContent, defaultAboutContent, type AboutPageContent } from "@/lib/page-content"
 
 export const metadata: Metadata = {
   title: "About Us",
   description: "Learn about the Inkbound Books team - a two-person team of authors and editors.",
 }
 
-const contacts = [
-  { title: "Author", email: "inkbound.author@proton.me" },
-  { title: "Editor/Developer", email: "inkbound.editor@proton.me" },
-  { title: "Business Inquiries", email: "inkbound.business@proton.me" },
-]
+export default async function AboutPage() {
+  const content = await getPageContent<AboutPageContent>("about", defaultAboutContent)
 
-export default function AboutPage() {
   return (
     <main className="relative z-10 mx-auto min-h-screen max-w-3xl px-4 pt-32 pb-16 md:px-8">
-      <h1 className="mb-12 text-4xl font-semibold text-foreground md:text-5xl">About Inkbound</h1>
+      <h1 className="mb-12 text-4xl font-semibold text-foreground md:text-5xl">
+        {content.hero.title}
+      </h1>
 
       <ContentSection className="mb-8">
         <p className="mb-5 leading-relaxed text-muted-foreground">
-          We are a two-person team consisting of a main author and an editor/developer.
+          {content.intro.paragraph1}
         </p>
         <p className="leading-relaxed text-muted-foreground">
-          Our passion lies in crafting compelling stories and ensuring they are presented with the
-          highest quality. Every book we publish goes through a meticulous writing and editing
-          process to deliver the best reading experience possible.
+          {content.intro.paragraph2}
         </p>
       </ContentSection>
 
       <ContentSection className="mb-8">
-        <h2 className="mb-6 text-2xl font-semibold text-foreground">Get in Touch</h2>
-        <p className="mb-6 text-muted-foreground">You can reach out to us via email:</p>
+        <h2 className="mb-6 text-2xl font-semibold text-foreground">{content.contact.title}</h2>
+        <p className="mb-6 text-muted-foreground">{content.contact.description}</p>
 
         <ul className="mb-6 space-y-4">
-          {contacts.map((contact) => (
+          {content.contact.contacts.map((contact) => (
             <li
               key={contact.email}
               className="rounded-lg bg-background p-4 transition-colors hover:bg-border/50"
@@ -56,8 +53,7 @@ export default function AboutPage() {
 
       <ContentSection>
         <p className="text-muted-foreground">
-          We appreciate your interest in Inkbound Books and look forward to sharing our stories with
-          you!
+          {content.closing.text}
         </p>
       </ContentSection>
     </main>

@@ -23,6 +23,7 @@ export async function loginAdmin(password: string) {
     path: "/",
   })
 
+  // Return success - client will handle redirect
   return { success: true }
 }
 

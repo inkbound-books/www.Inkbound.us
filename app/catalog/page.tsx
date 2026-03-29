@@ -2,9 +2,10 @@ import type { Metadata } from "next"
 import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ExternalLink } from "lucide-react"
+import { ExternalLink, Download } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { getPageContent, defaultCatalogContent, type CatalogPageContent } from "@/lib/page-content"
 
 export const metadata: Metadata = {
   title: "Catalog",
@@ -13,21 +14,24 @@ export const metadata: Metadata = {
 
 export default async function CatalogPage() {
   const supabase = await createClient()
-  const { data: books } = await supabase
-    .from("books")
-    .select("*")
-    .order("is_featured", { ascending: false })
-    .order("created_at", { ascending: false })
+  const [{ data: books }, content] = await Promise.all([
+    supabase
+      .from("books")
+      .select("*")
+      .order("is_featured", { ascending: false })
+      .order("created_at", { ascending: false }),
+    getPageContent<CatalogPageContent>("catalog", defaultCatalogContent),
+  ])
 
   if (!books || books.length === 0) {
     return (
       <main className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col items-center justify-center px-4 pt-32 pb-16 md:px-8">
         <div className="text-center">
           <h1 className="mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-5xl font-bold text-transparent md:text-7xl">
-            Coming Soon!
+            {content.emptyState.title}
           </h1>
           <p className="text-lg text-muted-foreground md:text-xl">
-            Our catalog is currently being prepared. Check back soon for available books.
+            {content.emptyState.subtitle}
           </p>
         </div>
       </main>
@@ -37,10 +41,10 @@ export default async function CatalogPage() {
   return (
     <main className="relative z-10 mx-auto min-h-screen max-w-7xl px-4 pt-32 pb-16 md:px-8">
       <h1 className="mb-4 text-4xl font-bold text-foreground md:text-5xl">
-        Our Books
+        {content.hero.title}
       </h1>
       <p className="mb-12 text-lg text-muted-foreground">
-        Browse our collection of quality e-books
+        {content.hero.subtitle}
       </p>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -80,19 +84,11 @@ export default async function CatalogPage() {
                     </Button>
                   </Link>
                 )}
-                {book.apple_url && (
-                  <Link href={book.apple_url} target="_blank" rel="noopener noreferrer">
-                    <Button variant="outline" size="sm">
-                      <ExternalLink className="mr-2 h-4 w-4" />
-                      Apple
-                    </Button>
-                  </Link>
-                )}
-                {book.kobo_url && (
-                  <Link href={book.kobo_url} target="_blank" rel="noopener noreferrer">
-                    <Button variant="outline" size="sm">
-                      <ExternalLink className="mr-2 h-4 w-4" />
-                      Kobo
+                {book.preview_download_url && (
+                  <Link href={book.preview_download_url} target="_blank" rel="noopener noreferrer">
+                    <Button variant="secondary" size="sm">
+                      <Download className="mr-2 h-4 w-4" />
+                      Free Preview
                     </Button>
                   </Link>
                 )}
