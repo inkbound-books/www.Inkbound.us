@@ -23,18 +23,22 @@ const nextConfig = {
       // VULN-03: Basic XSS protection for older browsers
       { key: "X-XSS-Protection", value: "1; mode=block" },
       // VULN-03: Content Security Policy
-      // NOTE: 'unsafe-inline' on style-src is needed for Tailwind/shadcn inline styles.
-      // Tighten further once you have a nonce-based setup or move to CSS modules.
       {
         key: "Content-Security-Policy",
         value: [
           "default-src 'self'",
-          "script-src 'self' 'unsafe-eval'", // 'unsafe-eval' required by Next.js dev mode; remove in prod if possible
-          "style-src 'self' 'unsafe-inline'",
+          // 'unsafe-inline' required by next-themes (injects inline script to set theme
+          // before first paint to avoid flash). 'unsafe-eval' required by Next.js runtime.
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+          // 'unsafe-inline' needed for Tailwind/shadcn. fonts.googleapis.com for Google Fonts CSS.
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+          // fonts.gstatic.com serves the actual font files (Inter, Dancing Script)
+          "font-src 'self' https://fonts.gstatic.com",
           "img-src 'self' data: blob:",
-          "font-src 'self'",
-          "connect-src 'self'",
-          "frame-src 'none'",
+          // va.vercel-scripts.com = Vercel Analytics endpoint
+          "connect-src 'self' https://va.vercel-scripts.com https://vitals.vercel-insights.com",
+          // VULN-06: epub-viewer uses blob: iframes for sandboxed EPUB rendering
+          "frame-src 'self' blob:",
           "object-src 'none'",
           "base-uri 'self'",
           "form-action 'self'",
@@ -48,7 +52,7 @@ const nextConfig = {
         source: "/(.*)",
         headers: securityHeaders,
       },
-      // VULN-01: Lock down CORS on all /admin routes — no wildcard origin
+      // VULN-01: Lock down CORS on all /admin routes â€” no wildcard origin
       {
         source: "/admin/(.*)",
         headers: [
