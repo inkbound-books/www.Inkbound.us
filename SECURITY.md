@@ -1,1 +1,1 @@
-Please report vulnerabilities to [developer@inkbound.us](mailto:developer@inkbound.us)
+Please report vulnerabilities privately or email [developer@inkbound.us](mailto:developer@inkbound.us)
