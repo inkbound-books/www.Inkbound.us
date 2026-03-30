@@ -154,7 +154,6 @@ export default function EpubViewerPage() {
   const [showSettings, setShowSettings] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const iframeRef = useRef<HTMLIFrameElement>(null)
-  const blobUrlRef = useRef<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -253,18 +252,20 @@ export default function EpubViewerPage() {
   const currentChapter = chapters[currentIndex]
   const progress = chapters.length > 0 ? ((currentIndex + 1) / chapters.length) * 100 : 0
 
-  // Build styled blob for iframe
-  if (blobUrlRef.current) {
-    URL.revokeObjectURL(blobUrlRef.current)
-    blobUrlRef.current = null
-  }
-  let blobUrl: string | null = null
-  if (currentChapter) {
+  // Build styled blob URL in an effect so it updates properly when settings change
+  const [blobUrl, setBlobUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!currentChapter) {
+      setBlobUrl(null)
+      return
+    }
     const styledHtml = injectReaderStyles(currentChapter.html, settings)
     const blob = new Blob([styledHtml], { type: "text/html" })
-    blobUrl = URL.createObjectURL(blob)
-    blobUrlRef.current = blobUrl
-  }
+    const url = URL.createObjectURL(blob)
+    setBlobUrl(url)
+    return () => URL.revokeObjectURL(url)
+  }, [currentChapter, settings])
 
   // ── Upload screen (old UI) ──────────────────────────────────────────────────
   if (!isViewerOpen) {
