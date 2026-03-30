@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { AdminSidebar } from "@/components/admin/admin-sidebar"
 import { PagesManager } from "@/components/admin/pages-manager"
+import { getNavLinks } from "@/app/admin/actions"
 
 export default async function AdminPagesPage() {
   const supabase = await createClient()
@@ -8,6 +9,9 @@ export default async function AdminPagesPage() {
     .from("pages")
     .select("*")
     .order("slug", { ascending: true })
+
+  const navLinks = await getNavLinks()
+  const navLinkProps = navLinks.map(({ label, href }) => ({ label, href }))
 
   return (
     <div className="min-h-screen bg-background">
@@ -19,7 +23,7 @@ export default async function AdminPagesPage() {
             <p className="text-muted-foreground">Create, edit, and manage your website pages</p>
           </div>
 
-          <PagesManager pages={pages || []} />
+          <PagesManager pages={pages || []} initialNavLinks={navLinkProps} />
         </div>
       </main>
     </div>

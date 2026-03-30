@@ -3,6 +3,7 @@
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { createClient } from "@/lib/supabase/server"
 
 async function requireAdmin() {
   const cookieStore = await cookies()
@@ -12,7 +13,7 @@ async function requireAdmin() {
   }
 }
 
-// ─── Books ──────────────────────────────────────────────────────────────────
+// ─── Books ───────────────────────────────────────────────────────────────────
 
 export async function addBook(data: {
   title: string
@@ -38,9 +39,7 @@ export async function addBook(data: {
     is_featured: data.is_featured ?? false,
   })
 
-  if (error) {
-    return { error: error.message }
-  }
+  if (error) return { error: error.message }
 
   revalidatePath("/admin/books")
   revalidatePath("/catalog")
@@ -79,9 +78,7 @@ export async function updateBook(
     })
     .eq("id", id)
 
-  if (error) {
-    return { error: error.message }
-  }
+  if (error) return { error: error.message }
 
   revalidatePath("/admin/books")
   revalidatePath("/catalog")
@@ -95,9 +92,7 @@ export async function deleteBook(id: string) {
 
   const { error } = await supabase.from("books").delete().eq("id", id)
 
-  if (error) {
-    return { error: error.message }
-  }
+  if (error) return { error: error.message }
 
   revalidatePath("/admin/books")
   revalidatePath("/catalog")
@@ -105,7 +100,7 @@ export async function deleteBook(id: string) {
   return { success: true }
 }
 
-// ─── Pages ──────────────────────────────────────────────────────────────────
+// ─── Pages ───────────────────────────────────────────────────────────────────
 
 export async function createPage(data: {
   slug: string
@@ -116,7 +111,6 @@ export async function createPage(data: {
   await requireAdmin()
   const supabase = createAdminClient()
 
-  // Parse content as JSON if possible, otherwise store as a simple object
   let contentJson: Record<string, unknown> = {}
   if (data.content) {
     try {
@@ -133,9 +127,7 @@ export async function createPage(data: {
     meta_description: data.meta_description || null,
   })
 
-  if (error) {
-    return { error: error.message }
-  }
+  if (error) return { error: error.message }
 
   revalidatePath("/admin/pages")
   revalidatePath("/")
@@ -153,7 +145,6 @@ export async function updatePage(
   await requireAdmin()
   const supabase = createAdminClient()
 
-  // Parse content as JSON if possible, otherwise store as a simple object
   let contentJson: Record<string, unknown> = {}
   if (data.content) {
     try {
@@ -173,9 +164,7 @@ export async function updatePage(
     })
     .eq("id", id)
 
-  if (error) {
-    return { error: error.message }
-  }
+  if (error) return { error: error.message }
 
   revalidatePath("/admin/pages")
   revalidatePath("/")
@@ -191,9 +180,7 @@ export async function deletePage(id: string) {
 
   const { error } = await supabase.from("pages").delete().eq("id", id)
 
-  if (error) {
-    return { error: error.message }
-  }
+  if (error) return { error: error.message }
 
   revalidatePath("/admin/pages")
   return { success: true }
@@ -208,28 +195,21 @@ export async function savePageContent(
 
   const { error } = await supabase
     .from("pages")
-    .update({
-      content,
-      updated_at: new Date().toISOString(),
-    })
+    .update({ content, updated_at: new Date().toISOString() })
     .eq("slug", slug)
 
-  if (error) {
-    return { success: false, error: error.message }
-  }
+  if (error) return { success: false, error: error.message }
 
-  // Revalidate all pages that might use this content
   revalidatePath("/admin/pages")
   revalidatePath("/")
   revalidatePath("/about")
   revalidatePath("/catalog")
   revalidatePath("/formats")
   revalidatePath(`/admin/pages/${slug}/edit`)
-  
   return { success: true }
 }
 
-// ─── Formats ────────────────────────────────────────────────────────────────
+// ─── Formats ─────────────────────────────────────────────────────────────────
 
 export async function addFormat(data: {
   name: string
@@ -247,9 +227,7 @@ export async function addFormat(data: {
     icon: data.icon || null,
   })
 
-  if (error) {
-    return { error: error.message }
-  }
+  if (error) return { error: error.message }
 
   revalidatePath("/admin/formats")
   revalidatePath("/formats")
@@ -279,9 +257,7 @@ export async function updateFormat(
     })
     .eq("id", id)
 
-  if (error) {
-    return { error: error.message }
-  }
+  if (error) return { error: error.message }
 
   revalidatePath("/admin/formats")
   revalidatePath("/formats")
@@ -294,11 +270,60 @@ export async function deleteFormat(id: string) {
 
   const { error } = await supabase.from("formats").delete().eq("id", id)
 
-  if (error) {
-    return { error: error.message }
-  }
+  if (error) return { error: error.message }
 
   revalidatePath("/admin/formats")
   revalidatePath("/formats")
+  return { success: true }
+}
+
+// ─── Nav Links ────────────────────────────────────────────────────────────────
+
+export interface NavLinkRow {
+  id: number
+  label: string
+  href: string
+  position: number
+}
+
+/** Public read — called from navbar.tsx (server component). */
+export async function getNavLinks(): Promise<NavLinkRow[]> {
+  try {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from("nav_links")
+      .select("id, label, href, position")
+      .order("position", { ascending: true })
+
+    if (error || !data) return []
+    return data as NavLinkRow[]
+  } catch {
+    return []
+  }
+}
+
+/** Admin write — replaces all rows with the new ordered list. */
+export async function saveNavLinks(
+  links: Array<{ label: string; href: string }>
+): Promise<{ success: boolean; error?: string }> {
+  await requireAdmin()
+  const supabase = createAdminClient()
+
+  // Delete all existing rows then re-insert in order.
+  // Simple and race-condition-free for a single-admin setup.
+  const { error: delError } = await supabase
+    .from("nav_links")
+    .delete()
+    .neq("id", 0) // delete all
+
+  if (delError) return { success: false, error: delError.message }
+
+  const rows = links.map((l, i) => ({ label: l.label, href: l.href, position: i }))
+  const { error: insError } = await supabase.from("nav_links").insert(rows)
+
+  if (insError) return { success: false, error: insError.message }
+
+  // Revalidate every page that renders the navbar
+  revalidatePath("/", "layout")
   return { success: true }
 }
